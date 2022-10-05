@@ -30,15 +30,30 @@ router.get("/", (req, res) => {
 // POST request
 // create route -> gives the ability to create new fruits
 router.post("/", (req, res) => {
-    // here, we will get something called a request body
+    // here, we'll get something called a request body
     // inside this function, that will be referred to as req.body
-    // we'll use the mongoose model method "create" to make a new fruit
+    // this is going to add ownership, via a foreign key reference, to our fruits
+    // basically, all we have to do, is append our request body, with the `owner` field, and set the value to the logged in user's id
+    req.body.owner = req.session.userId
+    // we'll use the mongoose model method `create` to make a new fruit
     Fruit.create(req.body)
-    .then(fruit => {
-        // send the user a '201 created' response, along with new fruit
-        res.status(201).json({fruit: fruit.toObject() })
-    })
-    .catch(error => console.log(error))
+        .then(fruit => {
+            // send the user a '201 created' response, along with the new fruit
+            res.status(201).json({ fruit: fruit.toObject() })
+        })
+        .catch(error => console.log(error))
+})
+
+// we're going to build another route that is owner specfic, to list all of the fruits owned by a certain (logged in) user
+router.get('/mine', (req, res) => {
+    // find fruits by ownership
+    Fruit.find({owner: req.session.userId})
+    // then display fruits
+        .then(fruits => {
+            res.status(200).json({fruits: fruits})
+        })
+    // or throw an error if there is one
+        .catch(err => res.json(err))
 })
 
 // PUT request
@@ -46,15 +61,24 @@ router.post("/", (req, res) => {
 router.put("/:id", (req, res) => {
     // console.log("I hit the update route", req.params)
     const id = req.params.id
-
-    // for now, we will use a simple mongoose model method... eventually we will update this and all routes and we'll use a different method
-    // we're using findByIdAndUpdate, which needs three arguements:
-    // ID, req.body, and whether the info is new
-    Fruit.findByIdAndUpdate(id, req.body, {new: true})
+    Fruit.findById(id)
+    // populate will provide more data about the document that is in the specified collection
+    // the first argument is the field to populate
+    // the second can specify which parts to keep of remove(prepend '-')
+    .populate("owner", "-password")
+    // we can also populate fields of our subdocuments
+    .populate("comments.author", "username")
+        .then(fruit => {
+            if (fruit.owner == req.session.userId) {
+                // update success is called '204 - no content'
+                res.sendStatus(204)
+                return fruit.updateOne(req.body)
+            } else {
+                res.send(401)
+            }    
+        })
         .then(fruit => {
             console.log('the fruit from update: ',fruit)
-            // update success is called '204 - no content'
-            res.sendStatus(204)
         })
         .catch(err => console.log(err))
     // res.send("nothing yet, but we're getting there")
@@ -66,11 +90,20 @@ router.delete("/:id", (req, res) => {
     // grab the id from the request
     const id =req.params.id
     // find and delete the fruit
-    Fruit.findByIdAndRemove(id)
-        // send a 204 if successful
-        .then(fruit => {
-            res.sendStatus(204)
+    // Fruit.findByIdAndRemove(id)
+    Fruit.findById(id)
+       
+        .then((fruit)=> {
+            if (fruit.owner == req.session.userId) {
+                // send a 204 if successful AND if the user is the owner
+                res.sendStatus(204)
+                return fruit.deleteOne()
+            } else {
+                // if they are not the owner, send the unauthorized status
+                res.sendStatus(401)
+            }
         })
+
         // send error if not
         .catch(err => res.json(err))
 })

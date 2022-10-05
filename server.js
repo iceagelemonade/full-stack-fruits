@@ -15,6 +15,7 @@ const express = require("express") // import express
 const path = require("path") // import path module
 const FruitRouter = require('./controllers/fruitControllers')
 const UserRouter = require('./controllers/userControllers')
+const CommentRouter = require('./controllers/commentControllers')
 const middleware = require('./utils/middleware')
 /////////////////////////////////////////////
 // Create our Express Application Object
@@ -43,7 +44,7 @@ app.get("/", (req, res) => {
 // first is the base url endpoint, second is the file to use
 app.use('/fruits', FruitRouter)
 app.use('/users', UserRouter)
-
+app.use('/comments', CommentRouter)
 /////////////////////////////////////////////
 // Server Listener
 /////////////////////////////////////////////
