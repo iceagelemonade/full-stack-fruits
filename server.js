@@ -20,7 +20,8 @@ const middleware = require('./utils/middleware')
 /////////////////////////////////////////////
 // Create our Express Application Object
 /////////////////////////////////////////////
-const app = express()
+// const app = express()
+const app =require('liquid-express-views')(express())
 
 /////////////////////////////////////////////
 // Middleware
@@ -36,15 +37,39 @@ middleware(app)
 /////////////////////////////////////////
 // home route:
 app.get("/", (req, res) => {
-    res.send("Your server is running, better go out and catch it")
+    // res.send("Your server is running, better go out and catch it")
+    if (req.session.loggedIn) {
+        res.redirect('/fruits')
+    } else {
+        res.render('index.liquid')
+    }
 })
 
+
+///////////////////////////////////////
+// Register Routes
+//////////////////////////////////////
 // here is where we register our routes. this is how server.js knows to send the appropriate request to the appropriate route and send the correct response
 // app.use, when we register a route, needs two arguements
 // first is the base url endpoint, second is the file to use
 app.use('/fruits', FruitRouter)
 app.use('/users', UserRouter)
 app.use('/comments', CommentRouter)
+
+// this renders an error page, gets the error from a URL request query
+app.get('/error', (req, res) => {
+    // get session variables
+    const { username, loggedIn, userId } = req.session
+    const error = req.query.error || 'This page does not exist'
+
+    res.render('error.liquid', {error, username, loggedIn, userId })
+})
+
+// this is a catch all route that will redirect to the error page for anything doesn't satisfy a controller
+app.all('*', (req, res) => {
+    res.redirect('/error')
+})
+
 /////////////////////////////////////////////
 // Server Listener
 /////////////////////////////////////////////

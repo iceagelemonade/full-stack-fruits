@@ -21,7 +21,7 @@ router.post("/:fruitId", (req, res) => {
         // we want to adjust req.body so that the author is automatically assigned
         req.body.author = req.session.userId
     } else {
-        res.sendStatus(401)
+        res.redirect(`/error?error=${err}`)
     }
     // find a specific fruit
     Fruit.findById(fruitId)
@@ -34,11 +34,11 @@ router.post("/:fruitId", (req, res) => {
             return fruit.save()
         })
         .then(fruit => {
-            res.status(200).json({ fruit: fruit })
+            res.redirect(`/fruits/${fruitId}`)
         })
         // do something else if it doesn't work
         //  --> send some kind of error depending on what went wrong
-        .catch(error => console.log(error))
+        .catch(err => res.redirect(`/error?error=${err}`))
 })
 
 // DELETE
@@ -63,18 +63,20 @@ router.delete('/delete/:fruitId/:commId', (req, res) => {
                     // here's another built in method
                     theComment.remove()
                     fruit.save()
-                    res.sendStatus(204)
+                    res.redirect(`/error?error=${err}`)
                     // return the saved fruit
                     return 
                 } else {
-                    res.sendStatus(401)
+                    const err = 'You%20are%20not%authorized%20for%this%action'
+                    res.redirect(`/error?error=${err}`)
                 }
             } else {
-                res.sendStatus(401)
+                const err = 'You%20are%20not%authorized%20for%this%action'
+                res.redirect(`/error?error=${err}`)
             }
         })
         // send an error if error
-        .catch(error => console.log(error))
+        .catch(err => res.redirect(`/error?error=${err}`))
 
 })
 
