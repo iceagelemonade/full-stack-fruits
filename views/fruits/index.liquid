@@ -15,7 +15,7 @@
                                     Not Ripe
                                 {% endif %}
                             </h5>
-                            <p class="card-text">The color of this {{fruit.name}} is {{fruit.color}}.</p>
+                            <p class="card-text">The color of this {{fruit.name}} is: <div class="colorBox" style="background-color: {{fruit.color}}"></div></p>
                             <a class="btn btn-info" href="/fruits/{{fruit.id}}">
                                 View {{fruit.name}}
                             </a>

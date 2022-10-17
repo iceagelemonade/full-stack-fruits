@@ -105,8 +105,8 @@ router.get('/logout', (req, res) => {
     const loggedIn = req.session.loggedIn
     const userId = req.session.userId
 
-    // res.render('users/logout', { username, loggedIn, userId})
-    res.render('users/logout')
+    res.render('users/logout', { username, loggedIn, userId})
+    // res.render('users/logout')
 })
 
 // DELETE -> runs the logout

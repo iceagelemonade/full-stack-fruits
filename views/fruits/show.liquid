@@ -10,7 +10,8 @@
                     Not Ripe, Not Ready
                 {% endif %}
             </h4>
-            <h4>The color of this fruit is: {{fruit.color}}</h4>
+            <h4>The color of this fruit is: <div class="colorBox" style="background-color: {{fruit.color}}"></div></h4>
+            
             {% if fruit.owner == userId %}
                 <div class="btn-group">
                     {%- comment -%} first button will send us to the edit page {%- endcomment -%}
